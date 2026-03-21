@@ -1,25 +1,62 @@
-import { fetchPostBySlug, fetchPosts } from '@repo/api/blog';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
- 
-export async function generateStaticParams() {
-  const posts = await fetchPosts(10); // Pre-render top 10 posts
-  
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
-}
+import { fetchPostBySlug } from '@repo/api/blog'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 
 type Props = {
-  params: Promise<{ slug: string }>;
-};
+  params: Promise<{ slug: string }>
+}
 
-export default async function PostPage({ params }: Props) {
-  const { slug } = await params;
-  const post = await fetchPostBySlug(slug);
+// ✅ Direct data access - preferred approach
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const post = await fetchPostBySlug(slug)
 
   if (!post) {
-    notFound();
+    return {
+      title: 'Post Not Found',
+      description: 'The requested blog post could not be found.',
+    }
+  }
+
+  return {
+    title: post.title, // Layout template adds " | VAF Blog" suffix
+    description: post.excerpt,
+    keywords: post.tags.join(', '),
+    authors: [{ name: post.author.name }],
+    alternates: {
+      canonical: `/${slug}`, // metadataBase resolves to absolute URL
+    },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [
+        {
+          url: post.coverImage,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+      type: 'article',
+      publishedTime: post.publishedAt.toISOString(),
+      authors: [post.author.name],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: [post.coverImage],
+    },
+  }
+}
+
+export default async function PostPage({ params }: Props) {
+  const { slug } = await params
+  const post = await fetchPostBySlug(slug)
+
+  if (!post) {
+    notFound()
   }
 
   return (
@@ -58,5 +95,5 @@ export default async function PostPage({ params }: Props) {
         </footer>
       </article>
     </main>
-  );
+  )
 }
