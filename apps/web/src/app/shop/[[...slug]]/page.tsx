@@ -1,14 +1,16 @@
-export default async function ShopPage(props: {
+import { Suspense } from "react";
+
+async function ShopContent(props: {
   params: Promise<{ slug?: string[] }>
 }) {
   const params = await props.params
-  
+
   // params.slug is undefined when no segments present
   const categories = params.slug || []
   const isRoot = categories.length === 0
-  
+
   return (
-    <div className="p-8">
+    <div>
       <h1 className="mb-4 text-2xl font-bold">
         {isRoot ? 'All Products' : 'Filtered Products'}
       </h1>
@@ -27,6 +29,18 @@ export default async function ShopPage(props: {
           </ul>
         </div>
       )}
+    </div>
+  )
+}
+
+export default function ShopPage(props: {
+  params: Promise<{ slug?: string[] }>
+}) {
+  return (
+    <div className="p-8">
+      <Suspense fallback={<div>Loading shop...</div>}>
+        <ShopContent params={props.params} />
+      </Suspense>
     </div>
   )
 }

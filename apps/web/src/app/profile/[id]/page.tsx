@@ -64,20 +64,28 @@ async function ProfileContent({ id }: { id: string }) {
   );
 }
 
-export default async function ProfilePage({
+export default function ProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-
   return (
     <main className="mx-auto max-w-2xl p-8">
       <Suspense
         fallback={<div className="animate-pulse">Loading profile...</div>}
       >
-        <ProfileContent id={id} />
+        <ProfilePageContent params={params} />
       </Suspense>
     </main>
   );
+}
+
+async function ProfilePageContent({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params;
+
+  return <ProfileContent id={id} />;
 }

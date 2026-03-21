@@ -1,22 +1,33 @@
 import Link from 'next/link'
- 
-export default async function ErrorDemoPage(props: {
+import { Suspense } from 'react'
+
+async function ErrorTrigger(props: {
   searchParams: Promise<{ throw?: string }>
 }) {
   const searchParams = await props.searchParams
- 
+
   // Conditionally throw based on URL param
   if (searchParams.throw === 'true') {
     throw new Error('This error was triggered intentionally for testing')
   }
- 
+
+  return null
+}
+
+export default function ErrorDemoPage(props: {
+  searchParams: Promise<{ throw?: string }>
+}) {
   return (
     <main className="mx-auto max-w-2xl p-8">
+      <Suspense fallback={<div>Loading...</div>}>
+        <ErrorTrigger searchParams={props.searchParams} />
+      </Suspense>
+
       <h1 className="mb-4 font-bold text-3xl">Error Boundary Demo</h1>
       <p className="mb-6 text-gray-600">
         This page demonstrates how error boundaries work in Next.js.
       </p>
- 
+
       <div className="space-y-4">
         <div className="rounded border p-4">
           <h2 className="mb-2 font-semibold">Trigger an Error</h2>
@@ -30,7 +41,7 @@ export default async function ErrorDemoPage(props: {
             Throw Error
           </Link>
         </div>
- 
+
         <div className="rounded border p-4">
           <h2 className="mb-2 font-semibold">Safe Navigation</h2>
           <p className="mb-4 text-gray-600 text-sm">
